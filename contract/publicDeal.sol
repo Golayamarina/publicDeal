@@ -1,6 +1,6 @@
 
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 interface IDeal {
     function approve(string memory _gistId, string memory _gistHash) external;
@@ -19,7 +19,7 @@ contract PublicDeal is IDeal {
 
     modifier onlyParticipant() {
         require(
-            approvedByParticipants[msg.sender],"You are not participant");
+            participants[msg.sender],"You are not participant");
         _;
     }
 
@@ -49,17 +49,16 @@ contract PublicDeal is IDeal {
         require(approvedByParticipants[msg.sender] != true, "Deal has been approved");
         require(paid[msg.sender]  == dealPrice, "Deal hasn`t been paid");
 
-        payable(issuer).transfer(address(this).balance);
+        //payable(issuer).transfer(paid[msg.sender]);
+        (bool success, ) = issuer.call{value: paid[msg.sender]}("");
+        require(success, "Transfer not successfuly executed");
         approvedByParticipants[msg.sender] = true;
 
     }
 
     receive() external payable onlyParticipant {
         require(dealPrice == msg.value, "You should pay exact value of deal");
-
-        paid[msg.sender] = uint32(msg.value);
-
+        paid[msg.sender] = uint256(msg.value);
     }
 
-    
 }
