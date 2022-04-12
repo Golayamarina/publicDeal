@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 interface IDeal {
     function approve(string memory _gistId, string memory _gistHash) external;
