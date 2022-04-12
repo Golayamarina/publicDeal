@@ -5,15 +5,17 @@ interface IDeal {
     function approve(string memory _gistId, string memory _gistHash) external;
 }
 
-contract PrivateDeal is IDeal {
+contract PublicDeal is IDeal {
     
     address issuer;
 
-    mapping(address => uint32) public participants;
+    mapping(address => bool) public participants;
     mapping(address => bool) public approvedByParticipants;
+    mapping(address => uint256) public paid;
+
 
     uint256 public dealPrice;
-    uint256 public payed;
+    //uint256 public payed;
 
     bytes32 public gistId;
     bytes32 public gistHash;
@@ -41,6 +43,8 @@ contract PrivateDeal is IDeal {
             address participant = _participants[i];
 
             approvedByParticipants[participant] = false;
+            participants[participant] = true;
+
     }
 
     }
@@ -54,9 +58,11 @@ contract PrivateDeal is IDeal {
         );
         require(gistHash == keccak256(abi.encodePacked(_gistHash)),"GistHash is not equals");
         require(approvedByParticipants[msg.sender] != true, "Deal has been approved");
-        require(payed == dealPrice, "Deal hasn`t been paid");
+        //require(payed == dealPrice, "Deal hasn`t been paid");
+        require(paid[msg.sender]  == dealPrice, "Deal hasn`t been paid");
 
-        payable(issuer).transfer(payed);
+        //payable(issuer).transfer(payed);
+        payable(issuer).transfer(address(this).balance);
         approvedByParticipants[msg.sender] = true;
 
     }
@@ -64,7 +70,10 @@ contract PrivateDeal is IDeal {
     receive() external payable onlyParticipant {
         require(dealPrice == msg.value, "You should pay exact value of deal");
 
-        payed = msg.value;
+        //payed = msg.value;
+        //payed = participants[msg.value]
+        paid[msg.sender] = uint32(msg.value);
+
     }
 
     
